@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Flask Docker App</title>
+<link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+<div class="container">
+<h1>🚀 Flask Docker App</h1>
+<p>Your app is running successfully inside Docker.</p>
+
+
+<button onclick="loadMessage()">Get API Message</button>
+
+
+<div id="result"></div>
+</div>
+
+
+<script>
+async function loadMessage() {
+const res = await fetch('/api');
+const data = await res.json();
+document.getElementById('result').innerText = data.message;
+}
+</script>
+</body>
+</html>

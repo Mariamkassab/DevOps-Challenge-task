@@ -1,0 +1,12 @@
+replicaCount: 2
+
+image:
+  repository: 453979066708.dkr.ecr.us-east-1.amazonaws.com/app-reg
+  tag: latest
+  pullPolicy: IfNotPresent
+  containerPort: 5000
+
+service:
+  type: NodePort
+  port: 80
+  targetPort: 5000
