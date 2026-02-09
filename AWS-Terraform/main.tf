@@ -73,31 +73,6 @@ module "bastion_host_security_group" {
 }
 
 
-# module "endpoint_security_group" {
-#   source         = "./modules/security-group"
-#   created_vpc_id = module.terraform_vpc.vpc_id
-
-#   ingress_rules = {
-#     no-rules = {
-#       port        = 0
-#       protocol    = ""
-#       cidr_blocks = []   # my public ip
-#       security_group = [] 
-#     }
-#   }
-
-#   egress_rules = {
-#     ec2 = {
-#       port        = 22
-#       protocol    = "tcp"
-#       cidr_blocks = var.endpoint-ssh-cidr
-#       security_group = []
-
-#     }
-#   }
-
-#   sc_g_name = "endpoint_security_group"
-# }
 
 module "public_routing_table" {
   source         = "./modules/route_table"
@@ -147,25 +122,6 @@ module "EKS-node_group" {
   depends_on      = [module.eks-iam-roles]
 }
 
-# module "mysql-rds" {
-#   source = "./modules/RDS"
-#   engine-name = var.engine-name
-#   db-name = var.db-name
-#   storage = var.storage
-#   engine-v = var.engine-v
-#   instance-type = var.instance-type
-#   user = var.user
-#   subnet-vpc-id = [ module.terraform_subnet.third_pri_id , module.terraform_subnet.forth_pri_id ]
-#   skip-final-db-snapshot = var.skip-final-db-snapshot
-#   db-security-group = module.rds_security_group.sg_id
-#   max_allocated_storage-autoscalling = var.max_allocated_storage-autoscalling
-#   monitoring_interval = var.monitoring_interval
-#   maintenance_window = var.maintenance_window 
-#   backup_window = var.backup_window
-#   backup_retention_period = var.backup_retention_period
-#   secret-name = var.secret-name
-#   rds-enhanced-monitoring-role = var.rds-enhanced-monitoring-role
-# }
 
 module "bastion-host" {
   source                      = "./modules/ec2-bastion-host"
@@ -175,4 +131,51 @@ module "bastion-host" {
 
 module "ecr_registry" {
   source = "./modules/ECR"
+}
+
+
+
+
+resource "aws_iam_role" "alb_controller" {
+  name = "eks-alb-controller-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Federated = aws_iam_openid_connect_provider.eks.arn
+      }
+      Action = "sts:AssumeRoleWithWebIdentity"
+      Condition = {
+        StringEquals = {
+          "${replace(data.aws_eks_cluster.this.identity[0].oidc[0].issuer, "https://", "")}:sub" = "system:serviceaccount:kube-system:aws-load-balancer-controller"
+        }
+      }
+    }]
+  })
+}
+
+# Attach the IAM Policy to the Role
+resource "aws_iam_role_policy_attachment" "alb_controller_attach" {
+  policy_arn = "arn:aws:iam::453979066708:policy/AWSLoadBalancerControllerIAMPolicy"  # error in this policy arm
+  role       = aws_iam_role.alb_controller.name
+}
+
+
+data "aws_eks_cluster" "this" {
+  name = module.EKS-cluster.eks-cluster-name
+  depends_on = [ module.EKS-cluster ]
+}
+
+# data "aws_iam_openid_connect_provider" "eks" {
+#   url = data.aws_eks_cluster.this.identity[0].oidc[0].issuer
+# }
+
+resource "aws_iam_openid_connect_provider" "eks" {
+  url = data.aws_eks_cluster.this.identity[0].oidc[0].issuer
+
+  client_id_list = ["sts.amazonaws.com"]
+
+  thumbprint_list = ["9e99a48a9960b14926bb7f3b02e22da0afd40f7a"]
 }
