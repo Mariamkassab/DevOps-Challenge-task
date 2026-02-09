@@ -3,41 +3,8 @@ aws configure
 aws eks --region us-east-1 update-kubeconfig --name my-eks-cluster
 
 
-curl -sL "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" \
-  | tar xz -C /tmp
-
-sudo mv /tmp/eksctl /usr/local/bin
-
-eksctl utils associate-iam-oidc-provider \
-  --region us-east-1 \
-  --cluster my-eks-cluster \
-  --approve
-  #it connects your EKS cluster to AWS IAM using OIDC so that Kubernetes pods can securely use AWS permissions.
-  # Creates an OIDC identity provider in IAM
-  # Links it to your EKS cluster
-  # Enables IAM Roles for Service Accounts (IRSA)
-  # IRSA = IAM Roles for Service Accounts
-
-eksctl create iamserviceaccount \
-  --cluster my-eks-cluster \
-  --namespace kube-system \
-  --name aws-load-balancer-controller \
-  --attach-policy-arn arn:aws:iam::453979066708:policy/AWSLoadBalancerControllerIAMPolicy \
-  --approve \
-  --region us-east-1
-
-
-
-eksctl create iamserviceaccount \
-  --cluster my-eks-cluster \
-  --namespace kube-system \
-  --name aws-load-balancer-controller \
-  --attach-policy-arn arn:aws:iam::453979066708:policy/AWSLoadBalancerControllerIAMPolicy \
-  --approve \
-  --region us-east-1 \
-  --override-existing-serviceaccounts
-
-
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+helm version
 
 
 helm repo add eks https://aws.github.io/eks-charts
@@ -50,3 +17,21 @@ helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
   --set serviceAccount.name=aws-load-balancer-controller \
   --set region=us-east-1 \
   --set vpcId=vpc-095b5ed8ed64f72ae
+
+
+aws iam get-role --role-name eks-alb-controller-role \
+  --query "Role.Arn" --output text
+
+
+
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: aws-load-balancer-controller
+  namespace: kube-system
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::453979066708:role/eks-alb-controller-role
+EOF
+
+
