@@ -14,3 +14,10 @@ variable "az" {
   type = list
 }
 
+variable "elb-type" {
+  type = list
+}
+
+variable "cluster_name" {
+  type = string
+}

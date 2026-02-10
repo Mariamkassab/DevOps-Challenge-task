@@ -47,23 +47,4 @@ variable "pri-table-name" {}
 variable "cluster_name" {}
 variable "node_group_name" {}
 
-# # rds
-# variable "engine-name" {}
-# variable "db-name" {}
-# variable "storage" {}
-# variable "engine-v" {}
-# variable "instance-type" {}
-# variable "user" {}
-
-# variable "skip-final-db-snapshot" {
-#   type = bool
-# }
-# variable "max_allocated_storage-autoscalling" {}
-# variable "monitoring_interval" {}
-# variable "maintenance_window" {}
-# variable "backup_window" {}
-# variable "backup_retention_period" {}
-# variable "secret-name" {}
-# variable "rds-enhanced-monitoring-role" {}
-
-
+variable "elb-type" {}

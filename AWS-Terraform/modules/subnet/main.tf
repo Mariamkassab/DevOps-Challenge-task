@@ -7,5 +7,7 @@ resource "aws_subnet" "terraform_subnet" {
 
   tags = {
     Name = var.subnet_name[count.index]
+    "kubernetes.io/role/${var.elb-type[count.index]}" = "1"
+    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
   }
 }

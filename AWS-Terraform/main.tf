@@ -11,6 +11,8 @@ module "terraform_subnet" {
   subnet_cidr    = var.subnet_cidr
   az             = var.az
   subnet_name    = var.subnet_name
+  elb-type = var.elb-type
+  cluster_name = var.cluster_name
 }
 
 module "nat_gateway" {
@@ -201,6 +203,12 @@ resource "aws_iam_policy" "alb_controller" {
       {
         Effect = "Allow"
         Action = [
+          "ec2:CreateSecurityGroup",
+          "ec2:DeleteSecurityGroup",
+          "ec2:AuthorizeSecurityGroupIngress",
+          "ec2:RevokeSecurityGroupIngress",
+          "ec2:AuthorizeSecurityGroupEgress",
+          "ec2:RevokeSecurityGroupEgress",
           "ec2:DescribeAccountAttributes",
           "ec2:DescribeAddresses",
           "ec2:DescribeAvailabilityZones",
@@ -214,7 +222,12 @@ resource "aws_iam_policy" "alb_controller" {
           "ec2:DescribeTags",
           "ec2:GetCoipPoolUsage",
           "ec2:DescribeCoipPools",
-          "ec2:GetSecurityGroupsForVpc"
+          "ec2:GetSecurityGroupsForVpc",
+          "ec2:DescribeRouteTables",
+          "ec2:CreateTags",
+          "ec2:DeleteTags",
+          "ec2:ModifyNetworkInterfaceAttribute"
+
         ]
         Resource = "*"
       },
