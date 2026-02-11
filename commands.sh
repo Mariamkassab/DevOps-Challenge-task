@@ -50,3 +50,42 @@ helm install flask-release .
 kubectl logs -n kube-system -l app.kubernetes.io/name=aws-load-balancer-controller
 # Check logs of the controller for your ingress
 
+ 
+
+
+# ArgoCD installation 
+
+helm repo add argo https://argoproj.github.io/argo-helm
+helm repo update
+
+kubectl create namespace argocd
+
+kubectl create namespace argocd
+
+helm install argocd argo/argo-cd \
+  -n argocd \
+  -f argocd-values.yaml
+
+
+
+
+
+# Helm Secrets or AWS Secrets Manager
+
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+
+
+helm plugin install https://github.com/jkroepke/helm-secrets   #install helm secrets
+curl -L https://github.com/getsops/sops/releases/download/v3.8.1/sops-linux-amd64 -o sops #install sops
+chmod +x sops
+mv sops /usr/local/bin/sops
+
+
+helm secrets encrypt ./templates/secret.yaml
+helm secrets upgrade --install flask-app ./chart -f s./template/ecrets.yaml
+
+kubectl get secret flask-secret -o yaml # we will see the encrypted version of the secret
+
+
+
+

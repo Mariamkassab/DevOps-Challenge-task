@@ -10,3 +10,12 @@ service:
   type: NodePort
   port: 80
   targetPort: 5000
+
+
+
+secret:
+  USERNAME: myusername
+  PASSWORD: mypassword
+
+ingress:
+  port: 80
