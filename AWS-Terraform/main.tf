@@ -190,6 +190,8 @@ resource "aws_iam_policy" "alb_controller" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
+
+      # Service linked role
       {
         Effect = "Allow"
         Action = ["iam:CreateServiceLinkedRole"]
@@ -200,6 +202,8 @@ resource "aws_iam_policy" "alb_controller" {
           }
         }
       },
+
+      # EC2 permissions
       {
         Effect = "Allow"
         Action = [
@@ -227,15 +231,27 @@ resource "aws_iam_policy" "alb_controller" {
           "ec2:CreateTags",
           "ec2:DeleteTags",
           "ec2:ModifyNetworkInterfaceAttribute"
-
         ]
         Resource = "*"
       },
+
+      # ELB full access
       {
         Effect   = "Allow"
         Action   = ["elasticloadbalancing:*"]
         Resource = "*"
       },
+
+      # 🔐 REQUIRED for ALB OIDC / Cognito authentication
+      {
+        Effect = "Allow"
+        Action = [
+          "cognito-idp:DescribeUserPoolClient"
+        ]
+        Resource = "*"
+      },
+
+      # ACM
       {
         Effect = "Allow"
         Action = [
@@ -245,6 +261,8 @@ resource "aws_iam_policy" "alb_controller" {
         ]
         Resource = "*"
       },
+
+      # IAM certs
       {
         Effect = "Allow"
         Action = [
@@ -253,6 +271,8 @@ resource "aws_iam_policy" "alb_controller" {
         ]
         Resource = "*"
       },
+
+      # WAF classic
       {
         Effect = "Allow"
         Action = [
@@ -263,6 +283,8 @@ resource "aws_iam_policy" "alb_controller" {
         ]
         Resource = "*"
       },
+
+      # WAFv2
       {
         Effect = "Allow"
         Action = [
@@ -273,6 +295,8 @@ resource "aws_iam_policy" "alb_controller" {
         ]
         Resource = "*"
       },
+
+      # Shield
       {
         Effect = "Allow"
         Action = [
