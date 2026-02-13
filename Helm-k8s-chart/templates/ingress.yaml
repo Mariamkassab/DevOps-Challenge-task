@@ -6,17 +6,31 @@ metadata:
     kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
+
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:453979066708:certificate/1a7a0a34-160d-46b8-a937-8859d490295d
+
     alb.ingress.kubernetes.io/auth-type: oidc
-    alb.ingress.kubernetes.io/auth-idp-cognito: '{"UserPoolArn":"arn:aws:cognito:...","UserPoolClientId":"..."}'
     alb.ingress.kubernetes.io/auth-on-unauthenticated-request: authenticate
+    alb.ingress.kubernetes.io/auth-idp-oidc: |
+      {
+        "Issuer":"https://github.com",
+        "AuthorizationEndpoint":"https://github.com/login/oauth/authorize",
+        "TokenEndpoint":"https://github.com/login/oauth/access_token",
+        "UserInfoEndpoint":"https://api.github.com/user",
+        "SecretName":"github-oidc-secret"
+      }
+
 spec:
   rules:
-    - http:
+    - host: mariam-flask.website   # ⭐  IMPORTANT
+      http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: flask-service     # your Service name
+                name: flask-service
                 port:
-                  number: {{ .Values.ingress.port }}      # service port
+                  number: 80
