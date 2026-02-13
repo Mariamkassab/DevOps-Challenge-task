@@ -2,12 +2,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: flask-service
-  namespace: {{ .values.namespace }}
+  namespace: {{ .Values.namespace }}
 spec:
   selector:
     app: flaskapp
   ports:
     - protocol: TCP
-      port: {{ .values.service.port }}
-      targetPort: {{ .values.service.targetPort }}
-  type: {{ .values.service.type }}
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+  type: {{ .Values.service.type }}
