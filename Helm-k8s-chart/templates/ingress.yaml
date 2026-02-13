@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: flask-ingress
-  namespace: {{ .Values.namespace }}
+  namespace: {{.Values.namespace}}
   annotations:
     kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing
@@ -12,26 +12,15 @@ metadata:
     alb.ingress.kubernetes.io/ssl-redirect: "443"
     alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:453979066708:certificate/1a7a0a34-160d-46b8-a937-8859d490295d
 
-    alb.ingress.kubernetes.io/auth-type: oidc
-    alb.ingress.kubernetes.io/auth-on-unauthenticated-request: authenticate
-    alb.ingress.kubernetes.io/auth-idp-oidc: |
-      {
-        "Issuer":"https://github.com",
-        "AuthorizationEndpoint":"https://github.com/login/oauth/authorize",
-        "TokenEndpoint":"https://github.com/login/oauth/access_token",
-        "UserInfoEndpoint":"https://api.github.com/user",
-        "SecretName":"github-oidc-secret"
-      }
-
 spec:
   rules:
-    - host: mariam-flask.website   
+    - host: mariam-flask.website
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: flask-service
+                name: oauth2-proxy
                 port:
-                  number: 80
+                  number: 4180
