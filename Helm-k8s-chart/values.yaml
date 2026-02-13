@@ -1,4 +1,6 @@
 replicaCount: 2
+namespace: default
+
 
 image:
   repository: 453979066708.dkr.ecr.us-east-1.amazonaws.com/app-reg
