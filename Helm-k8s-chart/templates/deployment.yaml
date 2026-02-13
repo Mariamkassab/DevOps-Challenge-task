@@ -4,7 +4,7 @@ metadata:
   name: flask-deployment
   namespace: {{ .values.namespace }}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .values.replicaCount }}
   selector:
     matchLabels:
       app: flaskapp
@@ -17,7 +17,7 @@ spec:
         - name: flaskapp
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           ports:
-            - containerPort: {{ .Values.image.containerPort }}
+            - containerPort: {{ .values.image.containerPort }}
           env:
             - name: PASSWORD
               valueFrom:
