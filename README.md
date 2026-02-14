@@ -10,6 +10,7 @@ This project deploys a **Flask web application** on **AWS EKS** using:
 - AWS Load Balancer Controller (ALB Ingress)
 - oauth2-proxy (GitHub OAuth2 authentication)
 - ACM (HTTPS certificate)
+- Namecheap (paid domain,and DNS)
 - ArgoCD (GitOps deployment)
 
 The application is protected using **OAuth2 authentication via GitHub**.
@@ -55,6 +56,11 @@ The following resources are provisioned:
 
 - VPC
 - Public & Private Subnets
+- NAT
+- Internet gateway
+- Security groups
+- ECR
+- Bastion Host
 - EKS Cluster
 - IAM Roles (IRSA)
 - AWS Load Balancer Controller
@@ -83,15 +89,6 @@ docker build -t flask-app .
 docker tag flask-app:latest <ECR_REPO_URL>
 docker push <ECR_REPO_URL>
 ```
-
-# docker tag flask-app:latest <ECR_REPO_URL>
-docker push <ECR_REPO_URL>
-
-```bash
-docker tag flask-app:latest <ECR_REPO_URL>
-docker push <ECR_REPO_URL>
-```
-
 ---
 
 # 🔐 GitHub OAuth2 Setup
@@ -105,7 +102,6 @@ Authentication is handled by **oauth2-proxy**.
 Go to:
 
 **GitHub → Settings → Developer settings → OAuth Apps → New OAuth App**
-
 ---
 
 ### 🌐 Homepage URL
@@ -138,12 +134,94 @@ PY
 ```
 ## 3️⃣ Create Kubernetes Secret
 ```bash
-kubectl create secret generic oauth2-proxy-secret \
-  -n default \
-  --from-literal=client-id="<GITHUB_CLIENT_ID>" \
-  --from-literal=client-secret="<GITHUB_CLIENT_SECRET>" \
-  --from-literal=cookie-secret="<COOKIE_SECRET>"
+apiVersion: v1
+kind: Secret
+metadata:
+  name: oauth2-proxy-secret
+  namespace: default   
+type: Opaque
+stringData:
+  client-id: {{ .values.client-id}}
+  client-secret: {{ .values.client-secret}}
+  cookie-secret: {{ .values.cookie-secret}}
 ```
+## 4️⃣ Create OAuth2 Deployment and service
+
+```bash
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oauth2-proxy
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oauth2-proxy
+  template:
+    metadata:
+      labels:
+        app: oauth2-proxy
+    spec:
+      containers:
+      - name: oauth2-proxy
+        image: quay.io/oauth2-proxy/oauth2-proxy:v7.6.0
+        args:
+          - --provider=github
+          - --http-address=0.0.0.0:4180
+
+          # ✅  protect everything by making oauth2-proxy the front door
+          - --upstream=http://flask-service.default.svc.cluster.local:80
+
+          # ✅  your domain
+          - --redirect-url=https://mariam-flask.website/oauth2/callback
+          - --whitelist-domain=mariam-flask.website
+
+          # ✅  cookies
+          - --cookie-secure=true
+          - --cookie-httponly=true
+          - --cookie-samesite=lax
+
+          # optional but helpful
+          - --email-domain=*
+          - --set-authorization-header=true
+          - --pass-access-token=true
+          - --reverse-proxy=true
+        env:
+          - name: OAUTH2_PROXY_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: oauth2-proxy-secret
+                key: client-id
+          - name: OAUTH2_PROXY_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: oauth2-proxy-secret
+                key: client-secret
+          - name: OAUTH2_PROXY_COOKIE_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: oauth2-proxy-secret
+                key: cookie-secret
+        ports:
+          - containerPort: 4180
+```
+```bash
+apiVersion: v1
+kind: Service
+metadata:
+  name: oauth2-proxy
+  namespace: default
+spec:
+  selector:
+    app: oauth2-proxy
+  ports:
+    - name: http
+      port: 4180
+      targetPort: 4180
+```
+---
+
 ## 🌐 Ingress (ALB)
 The ALB Ingress:
 
@@ -152,12 +230,14 @@ The ALB Ingress:
 - Routes traffic to oauth2-proxy
 - oauth2-proxy forwards requests to Flask
 
-Example annotations:
+Ingress ALB Annotations:
 ```bash
-alb.ingress.kubernetes.io/scheme: internet-facing
-alb.ingress.kubernetes.io/target-type: ip
-alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
-alb.ingress.kubernetes.io/ssl-redirect: "443"
+   kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/certificate-arn:<ACM_CERT_ARN>
 ```
 ## 🔒 HTTPS (ACM)
 ACM certificate is requested and validated via DNS.
@@ -213,20 +293,17 @@ kubectl get endpoints
 
 - This project demonstrates:
 - Infrastructure as Code
+- AWS Public Cloud
 - Kubernetes ALB Ingress
 - OAuth2 integration without Cognito
 - Secure secret management
 - GitOps workflow with ArgoCD
 
-## 🎥 Demo Video
-
-
+## 🎥 Application Demo Video
 https://github.com/user-attachments/assets/a32a203f-bb08-44b8-a942-5ff0d086fbd0
 
-
-
 ---
-
+## <img src="https://argo-cd.readthedocs.io/en/stable/assets/logo.png" width="40"/> ArgoCD UI with the Flask App
 <img width="1857" height="980" alt="ArgoCD" src="https://github.com/user-attachments/assets/c1e98bb5-619d-4abf-832a-97a95d1ef60f" />
 
 ---
