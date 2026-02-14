@@ -20,19 +20,19 @@ spec:
           - --provider=github
           - --http-address=0.0.0.0:4180
 
-          # ✅  protect everything by making oauth2-proxy the front door
+          #  protect everything by making oauth2-proxy the front door
           - --upstream=http://flask-service.default.svc.cluster.local:80
 
-          # ✅  your domain
+          #  your domain
           - --redirect-url=https://mariam-flask.website/oauth2/callback
           - --whitelist-domain=mariam-flask.website
 
-          # ✅  cookies
+          #  cookies
           - --cookie-secure=true
           - --cookie-httponly=true
           - --cookie-samesite=lax
 
-          # optional but helpful
+          
           - --email-domain=*
           - --set-authorization-header=true
           - --pass-access-token=true
