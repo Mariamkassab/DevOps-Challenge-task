@@ -220,5 +220,14 @@ kubectl get endpoints
 
 ## 🎥 Demo Video
 
-https://github.com/Mariamkassab/DevOps-Challenge-task/blob/main/Demo/Flask-Demo.mp4
+
+https://github.com/user-attachments/assets/a32a203f-bb08-44b8-a942-5ff0d086fbd0
+
+
+
+---
+
+<img width="1857" height="980" alt="ArgoCD" src="https://github.com/user-attachments/assets/c1e98bb5-619d-4abf-832a-97a95d1ef60f" />
+
+---
 
