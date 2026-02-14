@@ -22,4 +22,4 @@ configs:
     server.insecure: true
 
 global:
-  domain: "mariam-flask.website"
+  domain: ""
