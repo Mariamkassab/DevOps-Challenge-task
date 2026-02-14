@@ -220,4 +220,5 @@ kubectl get endpoints
 
 ## 🎥 Demo Video
 
-<video controls src="https://github.com/Mariamkassab/DevOps-Challenge-task/blob/main/Demo/Flask-Demo.mp4" title="https://github.com/Mariamkassab/DevOps-Challenge-task/Demo/Flask-Demo.mp4"></video>
+https://github.com/Mariamkassab/DevOps-Challenge-task/blob/main/Demo/Flask-Demo.mp4
+
