@@ -217,3 +217,7 @@ kubectl get endpoints
 - OAuth2 integration without Cognito
 - Secure secret management
 - GitOps workflow with ArgoCD
+
+## 🎥 Demo Video
+
+https://github.com/Mariamkassab/DevOps-Challenge-task/Demo/Flask-Demo.mp4
